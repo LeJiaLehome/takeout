@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>阿辉小厨 外卖平台</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 1em;
+      background-color: #fff8f5;
+      color: #333;
+    }
+    h1 {
+      color: #b30000;
+    }
+    .menu-item {
+      border: 1px solid #ffd6cc;
+      border-radius: 12px;
+      padding: 1em;
+      margin-bottom: 1em;
+      background-color: #fff;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+    }
+    button {
+      background-color: #b30000;
+      color: white;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 0.5em;
+    }
+    button:hover {
+      background-color: #ff3300;
+    }
+    .cart {
+      margin-top: 2em;
+      padding: 1em;
+      border-top: 2px solid #ccc;
+    }
+    .qr-box {
+      margin-top: 1em;
+      background: #fff3e6;
+      padding: 1em;
+      border-radius: 8px;
+    }
+  </style>
+  <script>
+    const menu = [
+      { id: 1, name: "招牌咖喱鸡柳饭", price: 12.9 },
+      { id: 2, name: "宫保鸡丁饭", price: 11.5 },
+      { id: 3, name: "咸蛋炒虾饭", price: 14.0 },
+      { id: 4, name: "酸甜鸡柳饭", price: 12.5 }
+    ];
+
+    let cart = [];
+
+    function renderMenu() {
+      const menuDiv = document.getElementById("menu");
+      menuDiv.innerHTML = "";
+      menu.forEach(item => {
+        menuDiv.innerHTML += `
+          <div class="menu-item">
+            <strong>${item.name}</strong><br>
+            RM ${item.price.toFixed(2)}<br>
+            <button onclick="addToCart(${item.id})">加入购物车</button>
+          </div>
+        `;
+      });
+    }
+
+    function addToCart(id) {
+      const item = menu.find(i => i.id === id);
+      const exist = cart.find(i => i.id === id);
+      if (exist) {
+        exist.qty++;
+      } else {
+        cart.push({ ...item, qty: 1 });
+      }
+      renderCart();
+    }
+
+    function renderCart() {
+      const cartDiv = document.getElementById("cart");
+      if (cart.length === 0) {
+        cartDiv.innerHTML = "<em>购物车是空的</em>";
+        return;
+      }
+      let total = 0;
+      let cartHTML = "<h3>购物车</h3>";
+      cart.forEach(item => {
+        total += item.price * item.qty;
+        cartHTML += `${item.name} x ${item.qty} = RM ${(item.price * item.qty).toFixed(2)}<br>`;
+      });
+      cartHTML += `<strong>总价: RM ${total.toFixed(2)}</strong><br><br>`;
+      cartHTML += `<button onclick="checkout()">提交订单</button>`;
+      cartDiv.innerHTML = cartHTML;
+    }
+
+    function checkout() {
+      const name = prompt("请输入您的姓名：");
+      const phone = prompt("请输入电话：");
+      const address = prompt("请输入送餐地址：");
+      const payment = prompt("请选择付款方式：\n1 = 现金\n2 = Touch 'n Go\n3 = 银行转账");
+
+      let paymentText = "现金付款";
+      let paymentInfo = "请准备现金支付给送餐员。";
+
+      if (payment === "2") {
+        paymentText = "Touch 'n Go 电子钱包";
+        paymentInfo = "请扫码以下二维码付款：\nTNG 钱包账号：012-3456789";
+      } else if (payment === "3") {
+        paymentText = "银行转账";
+        paymentInfo = "请转账至：\nMaybank 户口：123456789012\n户口名：Ah Hui Kitchen";
+      }
+
+      let message = `我要下单：%0A%0A姓名：${name}%0A电话：${phone}%0A地址：${address}%0A付款方式：${paymentText}%0A订单内容：%0A`;
+      let total = 0;
+      cart.forEach(item => {
+        message += `- ${item.name} x ${item.qty}%0A`;
+        total += item.price * item.qty;
+      });
+      message += `总价：RM ${total.toFixed(2)}%0A%0A谢谢！`;
+
+      const whatsappLink = `https://wa.me/60149319951?text=${message}`;
+
+      document.getElementById("result").innerHTML = `
+        <h3>订单信息</h3>
+        <p><strong>姓名：</strong>${name}<br>
+        <strong>电话：</strong>${phone}<br>
+        <strong>地址：</strong>${address}<br>
+        <strong>付款方式：</strong>${paymentText}</p>
+        <div class="qr-box">
+          <strong>付款信息：</strong><br>
+          ${paymentInfo.replace(/\n/g, '<br>')}
+          <br><br><em>（示意二维码图）</em><br>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/QR_Code_example.svg/1200px-QR_Code_example.svg.png" width="120" />
+        </div>
+        <br><a href="${whatsappLink}" target="_blank"><button>通过 WhatsApp 发送订单</button></a>
+      `;
+      cart = [];
+      renderCart();
+    }
+
+    window.onload = () => {
+      renderMenu();
+      renderCart();
+    };
+  </script>
+</head>
+<body>
+  <h1>阿辉小厨 外卖平台</h1>
+  <div id="menu"></div>
+  <div class="cart" id="cart"></div>
+  <div id="result"></div>
+</body>
+</html>
